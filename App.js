@@ -1,10 +1,38 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, Button} from 'react-native';
+import { useState, useEffect } from 'react';
+import {Accelerometer} from 'expo-sensors'
+
+let time = 0;
+let allData = {};
 
 export default function App() {
+  const [{x,y,z}, setData] = useState({x:0,y:0,z:0})
+  const [magnitude, setMagnitude] = useState(0);
+
+  useEffect(()=>{
+    Accelerometer.setUpdateInterval(100)
+    Accelerometer.addListener((data)=>{
+      setData(data);
+      allData[time] = data;
+      time+=100;
+    })
+  },[])
+
+  useEffect(()=>{
+    setMagnitude(Math.sqrt(x*x+y*y+z*z))
+  }, [x,y,z])
+
+
   return (
     <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
+      <Text>x: {x}</Text>
+      <Text>y: {y}</Text>
+      <Text>z: {z}</Text>
+      <Text>Magnitude: {magnitude}</Text>
+      <Button onPress={()=>{console.log(allData)}} title="Report data" />
+      <Text>Recording data for {time/1000} s</Text>
+      <Button onPress={()=>{time = 0; allData = {}}} title="Clear data" />
       <StatusBar style="auto" />
     </View>
   );
@@ -13,8 +41,9 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: 100,
     backgroundColor: '#fff',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'top',
   },
 });
