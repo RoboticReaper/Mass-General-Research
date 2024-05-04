@@ -2,6 +2,9 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Button} from 'react-native';
 import { useState, useEffect } from 'react';
 import {Accelerometer} from 'expo-sensors'
+import { db } from './firebaseConfig';
+import { doc, setDoc } from 'firebase/firestore';
+
 
 let time = 0;
 let allData = {};
@@ -23,6 +26,16 @@ export default function App() {
     setMagnitude(Math.sqrt(x*x+y*y+z*z))
   }, [x,y,z])
 
+  function reportData(){
+    const now = new Date();
+    const docName = now.toString();
+    setDoc(doc(db, "data", docName), allData).then(()=>{
+      console.log("Reported in firebase")
+    }).catch((err)=>{
+      console.log(err)
+    })
+  }
+
 
   return (
     <View style={styles.container}>
@@ -30,7 +43,7 @@ export default function App() {
       <Text>y: {y}</Text>
       <Text>z: {z}</Text>
       <Text>Magnitude: {magnitude}</Text>
-      <Button onPress={()=>{console.log(allData)}} title="Report data" />
+      <Button onPress={()=>{reportData()}} title="Report data" />
       <Text>Recording data for {time/1000} s</Text>
       <Button onPress={()=>{time = 0; allData = {}}} title="Clear data" />
       <StatusBar style="auto" />
