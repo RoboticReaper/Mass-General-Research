@@ -15,10 +15,12 @@ export default function App() {
   const [{ x, y, z }, setData] = useState({ x: 0, y: 0, z: 0 })
   const [magnitude, setMagnitude] = useState(0);
   const [activity, setActivity] = useState("walk")
-  const [interval, setInterval] = useState(100)
+  const [interval, setInterval] = useState(10)
 
   useEffect(() => {
-    setMagnitude(Math.sqrt(x * x + y * y + z * z))
+    if(time%10==0){
+      setMagnitude(Math.sqrt(x * x + y * y + z * z))
+    }
   }, [x, y, z])
 
   function reportData() {
@@ -79,9 +81,9 @@ export default function App() {
 
       <Text>Measurement interval: {interval}ms</Text>
       <View style={styles.horizontal}>
-        <View style={styles.btn}><Button onPress={() => { setInterval(100) }} title="Set 100ms" /></View>
-        <View style={styles.btn}><Button onPress={() => { setInterval(50) }} title="Set 50ms" /></View>
         <View style={styles.btn}><Button onPress={() => { setInterval(10) }} title="Set 10ms" /></View>
+        <View style={styles.btn}><Button onPress={() => { setInterval(5) }} title="Set 5ms" /></View>
+        <View style={styles.btn}><Button onPress={() => { setInterval(1) }} title="Set 1ms" /></View>
       </View>
       <View style={styles.btn}><Button onPress={() => { start() }} title="Start recording" /></View>
       <View style={styles.btnBig}><Button style={styles.btnBig} onPress={() => { stop() }} title="Stop recording" /></View>
@@ -110,8 +112,6 @@ const styles = StyleSheet.create({
   btnBig: {
     margin: 5,
     width: 150,
-    minHeight: 200,
-    height: 200,
     backgroundColor: "blue"
   },
 
