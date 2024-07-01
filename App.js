@@ -7,24 +7,17 @@ import { doc, setDoc } from 'firebase/firestore';
 
 
 let time = 0;
-let allData = {};
+let allData = [];
 let unsub = null;
 let paused = true;
 
 export default function App() {
   const [{ x, y, z }, setData] = useState({ x: 0, y: 0, z: 0 })
-  const [magnitude, setMagnitude] = useState(0);
   const [activity, setActivity] = useState("walk")
-  const [interval, setInterval] = useState(10)
-
-  useEffect(() => {
-    if(time%10==0){
-      setMagnitude(Math.sqrt(x * x + y * y + z * z))
-    }
-  }, [x, y, z])
+  let interval = 10
 
   function reportData() {
-    if (Object.keys(allData).length === 0) {
+    if (allData.length === 0) {
       return;
       // don't log empty data
     }
@@ -33,9 +26,7 @@ export default function App() {
     setDoc(doc(db, "data", docName), {
       activity,
       acceleration: allData,
-      interval,
     }).then(() => {
-      console.log("Reported in firebase")
       Alert.alert("Logged data to firebase.")
     }).catch((err) => {
       console.log(err)
@@ -55,7 +46,8 @@ export default function App() {
     Accelerometer.setUpdateInterval(interval)
     unsub = Accelerometer.addListener((data) => {
       setData(data);
-      allData[time] = data;
+      data['time'] = time
+      allData.push(data);
       time += interval;
     })
   }
@@ -66,7 +58,6 @@ export default function App() {
       <Text>x: {x}</Text>
       <Text>y: {y}</Text>
       <Text>z: {z}</Text>
-      <Text>Magnitude: {magnitude}</Text>
       <View style={styles.horizontal}>
         <View style={styles.btn}><Button onPress={() => { setActivity("walk") }} title="Walk" /></View>
         <View style={styles.btn}><Button onPress={() => { setActivity("run") }} title="Run" /></View>
@@ -76,15 +67,10 @@ export default function App() {
       </View>
       <Text>Current activity: {activity}</Text>
       <Button onPress={() => { reportData() }} title="Report data" />
-      <Text>Recording data for {time / 1000} s</Text>
-      <Button onPress={() => { time = 0; allData = {}; setData({ x: 0, y: 0, z: 0 }) }} title="Clear data" />
+      <Text>Recording data for {time}ms</Text>
+      <Button onPress={() => { time = 0; allData = []; setData({ x: 0, y: 0, z: 0 }) }} title="Clear data" />
 
       <Text>Measurement interval: {interval}ms</Text>
-      <View style={styles.horizontal}>
-        <View style={styles.btn}><Button onPress={() => { setInterval(10) }} title="Set 10ms" /></View>
-        <View style={styles.btn}><Button onPress={() => { setInterval(5) }} title="Set 5ms" /></View>
-        <View style={styles.btn}><Button onPress={() => { setInterval(1) }} title="Set 1ms" /></View>
-      </View>
       <View style={styles.btn}><Button onPress={() => { start() }} title="Start recording" /></View>
       <View style={styles.btnBig}><Button style={styles.btnBig} onPress={() => { stop() }} title="Stop recording" /></View>
       <StatusBar style="auto" />
