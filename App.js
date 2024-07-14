@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Button, Alert } from 'react-native';
+import { StyleSheet, Text, View, Button, Alert, TextInput } from 'react-native';
 import { useState, useEffect } from 'react';
 import { Accelerometer } from 'expo-sensors'
 import { db } from './firebaseConfig';
@@ -16,19 +16,23 @@ export default function App() {
   useKeepAwake()
   const [{ x, y, z }, setData] = useState({ x: 0, y: 0, z: 0 })
   const [activity, setActivity] = useState("walk")
+  const [collection, setCollection] = useState("")
+  const [reportDisabled, setReportDisabled] = useState(false)
   let interval = 10
 
   function reportData() {
-    if (allData.length === 0) {
+    if (allData.length === 0 || collection === "") {
       return;
       // don't log empty data
     }
     const now = new Date();
     const docName = now.toString();
-    setDoc(doc(db, "data", docName), {
+    setReportDisabled(true)
+    setDoc(doc(db, collection, docName), {
       activity,
       acceleration: allData,
     }).then(() => {
+      setReportDisabled(false)
       Alert.alert("Logged data to firebase.")
     }).catch((err) => {
       console.log(err)
@@ -68,7 +72,13 @@ export default function App() {
         <View style={styles.btn}><Button onPress={() => { setActivity("upstair") }} title="Up stair" /></View>
       </View>
       <Text>Current activity: {activity}</Text>
-      <Button onPress={() => { reportData() }} title="Report data" />
+      <TextInput
+        onChangeText={setCollection}
+        value={collection}
+        style={styles.input}
+        placeholder="Collection name"
+      />
+      <Button onPress={() => { reportData() }} title="Report data" disabled={reportDisabled}/>
       <Text>Recording data for {time}ms</Text>
       <Button onPress={() => { time = 0; allData = []; setData({ x: 0, y: 0, z: 0 }) }} title="Clear data" />
 
@@ -102,5 +112,11 @@ const styles = StyleSheet.create({
     width: 150,
     backgroundColor: "blue"
   },
+  input: {
+    height: 40,
+    margin: 12,
+    borderWidth: 1,
+    padding: 10,
+  }
 
 });
