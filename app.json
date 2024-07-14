@@ -22,12 +22,23 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "permissions":[
+      "permissions": [
         "HIGH_SAMPLING_RATE_SENSORS"
-      ]
+      ],
+      "config": {
+        "devMenu": {
+          "shakeGestureEnabled": false
+        }
+      },
+      "package": "com.anonymous.accelerometer"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "18a87a34-56bb-4777-83f5-e8bbe4dbe339"
+      }
     }
   }
 }

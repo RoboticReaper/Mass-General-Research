@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Accelerometer } from 'expo-sensors'
 import { db } from './firebaseConfig';
 import { doc, setDoc } from 'firebase/firestore';
+import { useKeepAwake } from 'expo-keep-awake';
 
 
 let time = 0;
@@ -12,6 +13,7 @@ let unsub = null;
 let paused = true;
 
 export default function App() {
+  useKeepAwake()
   const [{ x, y, z }, setData] = useState({ x: 0, y: 0, z: 0 })
   const [activity, setActivity] = useState("walk")
   let interval = 10
