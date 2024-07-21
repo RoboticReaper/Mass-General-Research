@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, Button, Alert, TextInput } from 'react-native';
 import { useState, useEffect } from 'react';
 import { Accelerometer } from 'expo-sensors'
 import { db } from './firebaseConfig';
-import { doc, setDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { useKeepAwake } from 'expo-keep-awake';
 
 
@@ -16,24 +16,38 @@ export default function App() {
   useKeepAwake()
   const [{ x, y, z }, setData] = useState({ x: 0, y: 0, z: 0 })
   const [activity, setActivity] = useState("walk")
-  const [collection, setCollection] = useState("")
+  const [subject, setSubject] = useState("")
   const [reportDisabled, setReportDisabled] = useState(false)
   let interval = 10
 
-  function reportData() {
-    if (allData.length === 0 || collection === "") {
+  async function reportData(collectionName) {
+    if (allData.length === 0 || subject === "") {
       return;
       // don't log empty data
     }
     const now = new Date();
     const docName = now.toString();
     setReportDisabled(true)
-    setDoc(doc(db, collection, docName), {
+
+    // check if the person already exists
+    let person = doc(db, collectionName, subject)
+    let personExists = await getDoc(person);
+    if(!personExists.exists()){
+      await setDoc(person, {
+        creationDate: serverTimestamp(),
+        name: subject
+      })
+    }
+
+    let targetDoc = doc(db, collectionName, subject, activity, docName)
+
+    setDoc(targetDoc, {
       activity,
       acceleration: allData,
     }).then(() => {
       setReportDisabled(false)
       Alert.alert("Logged data to firebase.")
+      clear()
     }).catch((err) => {
       console.log(err)
     })
@@ -58,6 +72,10 @@ export default function App() {
     })
   }
 
+  function clear(){
+    time = 0; allData = []; setData({ x: 0, y: 0, z: 0 })
+  }
+
 
   return (
     <View style={styles.container}>
@@ -73,14 +91,18 @@ export default function App() {
       </View>
       <Text>Current activity: {activity}</Text>
       <TextInput
-        onChangeText={setCollection}
-        value={collection}
+        onChangeText={setSubject}
+        value={subject}
         style={styles.input}
-        placeholder="Collection name"
+        placeholder="Subject name"
       />
-      <Button onPress={() => { reportData() }} title="Report data" disabled={reportDisabled}/>
+      <View style={styles.horizontal}>
+        <View style={styles.btn}><Button onPress={() => { reportData("training") }} title="Report as training" disabled={reportDisabled}/></View>
+        <View style={styles.btn}><Button onPress={() => { reportData("testing") }} title="Report as testing" disabled={reportDisabled}/></View>
+
+      </View>
       <Text>Recording data for {time}ms</Text>
-      <Button onPress={() => { time = 0; allData = []; setData({ x: 0, y: 0, z: 0 }) }} title="Clear data" />
+      <Button onPress={clear} title="Clear data" />
 
       <Text>Measurement interval: {interval}ms</Text>
       <View style={styles.btn}><Button onPress={() => { start() }} title="Start recording" /></View>
