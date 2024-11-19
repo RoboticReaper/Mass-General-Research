@@ -86,8 +86,8 @@ export default function App() {
         <View style={styles.btn}><Button onPress={() => { setActivity("walk") }} title="Walk" /></View>
         <View style={styles.btn}><Button onPress={() => { setActivity("run") }} title="Run" /></View>
         <View style={styles.btn}><Button onPress={() => { setActivity("jump") }} title="Jump" /></View>
-        <View style={styles.btn}><Button onPress={() => { setActivity("downstair") }} title="Down stair" /></View>
-        <View style={styles.btn}><Button onPress={() => { setActivity("upstair") }} title="Up stair" /></View>
+        <View style={styles.btn}><Button onPress={() => { setActivity("sit") }} title="Sit" /></View>
+        <View style={styles.btn}><Button onPress={() => { setActivity("upstair") }} title="Upstairs" /></View>
       </View>
       <Text>Current activity: {activity}</Text>
       <TextInput
